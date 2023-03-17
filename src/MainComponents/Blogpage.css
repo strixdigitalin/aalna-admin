@@ -1,0 +1,10 @@
+.blogShowButton{
+    color: #B71C1C;
+    text-decoration: underline;
+}
+.blogImageContainer img{
+    width: 18vw;
+    margin-bottom: 2%;
+    border-radius: 6px;
+    aspect-ratio: 3/2;
+}
