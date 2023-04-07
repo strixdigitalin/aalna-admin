@@ -190,7 +190,11 @@ const AdminPortalOrderDetails = () => {
             <div className="eachOrderContainer" key={item._id}>
               <div className="orderDetailingContainer">
                 <div className="itemName">
-                  Order Id : {item._id} | RZP Payment Id : {item.rzp_paymentId}
+                  Order Id/CC Order Id : {item._id} |{" "}
+                  {item.cc_bankRefNo
+                    ? `CC Payment Bank Ref No. :
+                  ${item.cc_bankRefNo}`
+                    : "(Order cancelled while making payment)"}
                 </div>
                 <ul>
                   {item.products.map(cartItem => (
@@ -221,7 +225,8 @@ const AdminPortalOrderDetails = () => {
                 </ul>
                 {/* <div className='itemPrice'>Reseller Id : Reseller</div> */}
                 <div className="itemPrice">
-                  <b>Total Order Price : {convertRzpPrice(item.order_price)}</b>
+                  {/* <b>Total Order Price : {convertRzpPrice(item.order_price)}</b> */}
+                  <b>Total Order Price : {item.order_price}</b>
                 </div>
                 <div className="itemPrice">
                   Purchaser Name :{" "}
@@ -230,6 +235,15 @@ const AdminPortalOrderDetails = () => {
                 <div className="itemPrice">
                   Payment Status : {item.payment_mode} | {item.payment_status}
                 </div>
+                {item.shippingAddress ? (
+                  <div className="itemPrice">
+                    Delivery Address : {item.shippingAddress.address},{" "}
+                    {item.shippingAddress.pincode}
+                  </div>
+                ) : (
+                  <></>
+                )}
+
                 <div>Delivery Status : {item.order_status}</div>
                 <div className="orderStatusInfoContainer">
                   <input
