@@ -19,8 +19,8 @@ const AdminPortalOrderDetails = () => {
         Authorization: "Bearer " + user.token,
       },
     })
-      .then(res => res.json())
-      .then(result => {
+      .then((res) => res.json())
+      .then((result) => {
         if (result.status === "success") {
           setOrderList(result.data.orders);
           setDefaultProducts(result.data.orders);
@@ -37,14 +37,14 @@ const AdminPortalOrderDetails = () => {
     return temp.join("");
   }
 
-  const filterIt = text => {
+  const filterIt = (text) => {
     if (text == "" || text.trim() == "" || text.trim() == null) {
       setOrderList(defaultProducts);
       return null;
     }
     const lowerText = text.toLowerCase();
     console.log(text);
-    const filterItem = defaultProducts.filter(item => {
+    const filterItem = defaultProducts.filter((item) => {
       const lowerName = item._id.toLowerCase();
       const match = lowerName.match(lowerText);
 
@@ -73,11 +73,11 @@ const AdminPortalOrderDetails = () => {
         payment_status,
       }),
     })
-      .then(res => res.json())
-      .then(result => {
+      .then((res) => res.json())
+      .then((result) => {
         if (result.status == "success") {
           console.log(result);
-          const newData = orderList.filter(item => {
+          const newData = orderList.filter((item) => {
             if (item.orderId == orderId) return result.data.updatedOrder;
             else return item;
           });
@@ -85,10 +85,10 @@ const AdminPortalOrderDetails = () => {
           toast.success("Order status updated.");
         } else console.log(result.error);
       })
-      .catch(err => console.log(err));
+      .catch((err) => console.log(err));
   };
 
-  const handleCancelOrder = orderId => {
+  const handleCancelOrder = (orderId) => {
     fetch(`${process.env.REACT_APP_API_URI}/admin/order/${orderId}/update`, {
       method: "post",
       headers: {
@@ -99,18 +99,18 @@ const AdminPortalOrderDetails = () => {
         order_status: "CANCELLED BY ADMIN",
       }),
     })
-      .then(res => res.json())
-      .then(result => {
+      .then((res) => res.json())
+      .then((result) => {
         console.log(result);
         if (result.status == "success") {
-          const newData = orderList.filter(item => {
+          const newData = orderList.filter((item) => {
             if (item.orderId == orderId) return result.data.updatedOrder;
             else return item;
           });
           setOrderList(newData);
         } else console.log(result.error);
       })
-      .catch(err => console.log(err));
+      .catch((err) => console.log(err));
   };
 
   const handleLogout = () => {
@@ -183,10 +183,10 @@ const AdminPortalOrderDetails = () => {
             <input
               type="text"
               placeholder="Search order by Id"
-              onChange={e => filterIt(e.target.value)}
+              onChange={(e) => filterIt(e.target.value)}
             />
           </div>
-          {orderList.map(item => (
+          {orderList.map((item) => (
             <div className="eachOrderContainer" key={item._id}>
               <div className="orderDetailingContainer">
                 <div className="itemName">
@@ -197,7 +197,7 @@ const AdminPortalOrderDetails = () => {
                     : "(Order cancelled while making payment)"}
                 </div>
                 <ul>
-                  {item.products.map(cartItem => (
+                  {item.products.map((cartItem) => (
                     <li key={cartItem._id} className="listItem">
                       <img
                         // src={
@@ -205,14 +205,14 @@ const AdminPortalOrderDetails = () => {
                         //     ? cartItem?.product?.displayImage[0]?.url
                         //     : "https://static.thenounproject.com/png/5191452-200.png"
                         // }
-                        src={cartItem.product.displayImage[0].url}
+                        src={cartItem?.product?.displayImage[0].url}
                       />
                       <div>
                         {cartItem.product ? (
                           <div className="itemPrice orderDetailEachlist">
                             <div
                               style={{ marginBottom: "1%" }}
-                            >{`Item name : BEIGE & INDIGO COTTON BLOCK PRINT HANDCRAFTED AJRAKH DUPATTA SET | Product Id : #${cartItem.product.productId} | Price : ${cartItem.product.price} |
+                            >{`Item name : BEIGE & INDIGO COTTON BLOCK PRINT HANDCRAFTED AJRAKH DUPATTA SET | Product Id : #${cartItem.product?.productId} | Price : ${cartItem.product?.price} |
                       Quantity : ${cartItem.quantity}`}</div>
                           </div>
                         ) : (
