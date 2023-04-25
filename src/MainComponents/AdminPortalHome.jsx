@@ -29,30 +29,35 @@ const AdminPortalHome = () => {
   const [imagePreviewObj, setimagePreviewObj] = useState({
     imagePreview1: {
       edit: false,
+      file: null,
       url: location?.state?.displayImage[0]
         ? location?.state?.displayImage[0].url
         : null,
     },
     imagePreview2: {
       edit: false,
+      file: null,
       url: location?.state?.displayImage[1]
         ? location?.state?.displayImage[1].url
         : null,
     },
     imagePreview3: {
       edit: false,
+      file: null,
       url: location?.state?.displayImage[2]
         ? location?.state?.displayImage[2].url
         : null,
     },
     imagePreview4: {
       edit: false,
+      file: null,
       url: location?.state?.displayImage[3]
         ? location?.state?.displayImage[3].url
         : null,
     },
     imagePreview5: {
       edit: false,
+      file: null,
       url: location?.state?.displayImage[4]
         ? location?.state?.displayImage[4].url
         : null,
@@ -72,6 +77,7 @@ const AdminPortalHome = () => {
   const [colorList, setColorList] = useState([]);
   const [addProductLoading, setAddProductLoading] = useState(false);
   const [addCetgoryLoading, setAddCetgoryLoading] = useState(false);
+  const [allImages, setallImages] = useState([]);
   const [editorState, setEditorState] = useState(EditorState.createEmpty());
   const [editBlogData, setEditBlogData] = useState({});
   const [addColorLoading, setAddColorLoading] = useState(false);
@@ -129,6 +135,7 @@ const AdminPortalHome = () => {
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
     // console.log(selected);
+    // setallImages([...allImages, e.target.files[0]]);
     let reader = new FileReader();
     reader.onloadend = () => {
       // setImagePreview(reader.result);
@@ -137,6 +144,7 @@ const AdminPortalHome = () => {
         imagePreview1: {
           edit: true,
           url: reader.result,
+          file: selected,
         },
       });
       // console.log(reader.result);
@@ -152,6 +160,7 @@ const AdminPortalHome = () => {
         ...imagePreviewObj,
         imagePreview2: {
           edit: true,
+          file: selected,
           url: reader.result,
         },
       });
@@ -168,6 +177,7 @@ const AdminPortalHome = () => {
         ...imagePreviewObj,
         imagePreview3: {
           edit: true,
+          file: selected,
           url: reader.result,
         },
       });
@@ -185,6 +195,7 @@ const AdminPortalHome = () => {
         imagePreview4: {
           edit: true,
           url: reader.result,
+          file: selected,
         },
       });
       // console.log(reader.result);
@@ -201,6 +212,7 @@ const AdminPortalHome = () => {
         imagePreview5: {
           edit: true,
           url: reader.result,
+          file: selected,
         },
       });
       // console.log(reader.result);
@@ -233,8 +245,12 @@ const AdminPortalHome = () => {
       await postImage(type);
     }
   };
-
+  console.log(imagePreviewObj, "<<<this is imagepreview");
   const postImage = async (requestType) => {
+    if (requestType === "add") addProduct();
+    else editProduct();
+    // addProduct();
+    return null;
     const newData2 = [];
     const promises = Object.keys(imagePreviewObj).map(async (item) => {
       console.log(imagePreviewObj[item]);
@@ -281,11 +297,84 @@ const AdminPortalHome = () => {
     // setdisplayImages(newData2);
     await Promise.all(promises);
 
-    if (requestType === "add") addProduct(newData2);
-    else editProduct(newData2);
+    // if (requestType === "add") addProduct(newData2);
+    // else editProduct(newData2);
   };
 
   const addProduct = async (displayImages) => {
+    var myHeaders = new Headers();
+    myHeaders.append("Authorization", "Bearer " + user.token);
+
+    var formdata = new FormData();
+    formdata.append("displayName", displayName.current);
+    formdata.append("brand_title", brand_title.current);
+    formdata.append("description", prodDescriptionContent.current);
+    formdata.append("color", activeColor._id);
+    formdata.append("availability", availability.current);
+    formdata.append("price", price.current);
+    formdata.append("product_category", categoryType._id);
+
+    if (imagePreviewObj.imagePreview1?.file != null) {
+      formdata.append(
+        "image",
+        imagePreviewObj?.imagePreview1?.file,
+        imagePreviewObj?.imagePreview1?.file.name
+      );
+    }
+    if (imagePreviewObj.imagePreview2?.file != null) {
+      formdata.append(
+        "image",
+        imagePreviewObj?.imagePreview2?.file,
+        imagePreviewObj?.imagePreview2?.file.name
+      );
+    }
+    if (imagePreviewObj.imagePreview3?.file != null) {
+      formdata.append(
+        "image",
+        imagePreviewObj?.imagePreview3?.file,
+        imagePreviewObj?.imagePreview3?.file.name
+      );
+    }
+    if (imagePreviewObj.imagePreview4?.file != null) {
+      formdata.append(
+        "image",
+        imagePreviewObj?.imagePreview4?.file,
+        imagePreviewObj?.imagePreview4?.file.name
+      );
+    }
+    if (imagePreviewObj.imagePreview5?.file != null) {
+      formdata.append(
+        "image",
+        imagePreviewObj?.imagePreview5?.file,
+        imagePreviewObj?.imagePreview5?.file.name
+      );
+    }
+
+    var requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: formdata,
+      redirect: "follow",
+    };
+    console.log("uploading data");
+    fetch(process.env.REACT_APP_API_URI + "/admin/product/add", requestOptions)
+      // fetch("http://localhost:8080" + "/admin/product/add", requestOptions)
+      .then((response) => response.text())
+      .then((result1) => {
+        const result = JSON.parse(result1);
+        console.log(result);
+
+        if (result.status === "success") {
+          console.log(result);
+          navigation("/Products");
+        } else {
+          toast.error(result.error.message);
+          console.log(result.error);
+        }
+      })
+      .catch((error) => console.log("error", error));
+  };
+  const addProduct1 = async (displayImages) => {
     await fetch(`${process.env.REACT_APP_API_URI}/admin/product/add`, {
       method: "post",
       headers: {
@@ -318,9 +407,130 @@ const AdminPortalHome = () => {
   };
 
   const editProduct = async (displayImages) => {
-    // console.log(displayImages, "before edit product");
-    await fetch(
+    console.log(imagePreviewObj, "<<<thisiseditproduct");
+
+    let prevImages = [];
+    let newFiles = [];
+    if (
+      imagePreviewObj.imagePreview1.file == null &&
+      imagePreviewObj.imagePreview1.url != null
+    ) {
+      // newFiles=[...newFiles,imagePreviewObj.image]
+      prevImages = [...prevImages, { url: imagePreviewObj.imagePreview1.url }];
+    }
+    if (
+      imagePreviewObj.imagePreview2.file == null &&
+      imagePreviewObj.imagePreview2.url != null
+    ) {
+      // newFiles=[...newFiles,imagePreviewObj.image]
+      prevImages = [...prevImages, { url: imagePreviewObj.imagePreview2.url }];
+    }
+    if (
+      imagePreviewObj.imagePreview3.file == null &&
+      imagePreviewObj.imagePreview3.url != null
+    ) {
+      // newFiles=[...newFiles,imagePreviewObj.image]
+      prevImages = [...prevImages, { url: imagePreviewObj.imagePreview3.url }];
+    }
+    if (
+      imagePreviewObj.imagePreview4.file == null &&
+      imagePreviewObj.imagePreview4.url != null
+    ) {
+      // newFiles=[...newFiles,imagePreviewObj.image]
+      prevImages = [...prevImages, { url: imagePreviewObj.imagePreview4.url }];
+    }
+    if (
+      imagePreviewObj.imagePreview5.file == null &&
+      imagePreviewObj.imagePreview5.url != null
+    ) {
+      // newFiles=[...newFiles,imagePreviewObj.image]
+      prevImages = [...prevImages, { url: imagePreviewObj.imagePreview5.url }];
+    }
+    console.log(prevImages, "<<<thisisprevimage");
+    // return null;
+    var myHeaders = new Headers();
+    myHeaders.append("Authorization", "Bearer " + user.token);
+
+    var formdata = new FormData();
+    formdata.append("displayName", displayName.current);
+    formdata.append("brand_title", brand_title.current);
+    formdata.append("description", prodDescriptionContent.current);
+    formdata.append("color", activeColor._id);
+    formdata.append("availability", availability.current);
+    formdata.append("price", price.current);
+    formdata.append("prevImage", JSON.stringify(prevImages));
+    formdata.append("product_category", categoryType._id);
+
+    if (imagePreviewObj.imagePreview1?.file != null) {
+      formdata.append(
+        "image",
+        imagePreviewObj?.imagePreview1?.file,
+        imagePreviewObj?.imagePreview1?.file.name
+      );
+    }
+    if (imagePreviewObj.imagePreview2?.file != null) {
+      formdata.append(
+        "image",
+        imagePreviewObj?.imagePreview2?.file,
+        imagePreviewObj?.imagePreview2?.file.name
+      );
+    }
+    if (imagePreviewObj.imagePreview3?.file != null) {
+      formdata.append(
+        "image",
+        imagePreviewObj?.imagePreview3?.file,
+        imagePreviewObj?.imagePreview3?.file.name
+      );
+    }
+    if (imagePreviewObj.imagePreview4?.file != null) {
+      formdata.append(
+        "image",
+        imagePreviewObj?.imagePreview4?.file,
+        imagePreviewObj?.imagePreview4?.file.name
+      );
+    }
+    if (imagePreviewObj.imagePreview5?.file != null) {
+      formdata.append(
+        "image",
+        imagePreviewObj?.imagePreview5?.file,
+        imagePreviewObj?.imagePreview5?.file.name
+      );
+    }
+
+    var requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: formdata,
+      redirect: "follow",
+    };
+    console.log("uploading data");
+    // fetch(process.env.REACT_APP_API_URI + "/admin/product/add", requestOptions)
+    fetch(
       `${process.env.REACT_APP_API_URI}/admin/product/${location.state._id}/edit`,
+      requestOptions
+    )
+      .then((response) => response.text())
+      .then((result1) => {
+        const result = JSON.parse(result1);
+        console.log(result);
+
+        if (result.status === "success") {
+          console.log(result);
+          navigation("/Products");
+        } else {
+          toast.error(result.error.message);
+          console.log(result.error);
+        }
+      })
+      .catch((error) => console.log("error", error));
+
+    return null;
+    // console.log(displayImages, "before edit product");
+    // `${process.env.REACT_APP_API_URI}/admin/product/${location.state._id}/edit`,
+
+    return null;
+    await fetch(
+      `http://localhost:8080/admin/product/${location.state._id}/edit`,
       {
         method: "post",
         headers: {
@@ -659,7 +869,7 @@ const AdminPortalHome = () => {
                       // setImagePreview(null);
                       setimagePreviewObj({
                         ...imagePreviewObj,
-                        imagePreview1: { edit: true, url: null },
+                        imagePreview1: { edit: true, url: null, file: null },
                       });
                     }}
                   >
@@ -705,6 +915,7 @@ const AdminPortalHome = () => {
                         imagePreview2: {
                           edit: true,
                           url: null,
+                          file: null,
                         },
                       });
                     }}
@@ -751,6 +962,7 @@ const AdminPortalHome = () => {
                         imagePreview3: {
                           edit: true,
                           url: null,
+                          file: null,
                         },
                       });
                     }}
@@ -797,6 +1009,7 @@ const AdminPortalHome = () => {
                         imagePreview4: {
                           edit: true,
                           url: null,
+                          file: null,
                         },
                       });
                     }}
@@ -843,6 +1056,7 @@ const AdminPortalHome = () => {
                         imagePreview5: {
                           edit: true,
                           url: null,
+                          file: null,
                         },
                       });
                     }}
@@ -964,6 +1178,7 @@ const AdminPortalHome = () => {
                   onClick={() => {
                     setCategoryImagePreview({
                       url: null,
+                      file: null,
                     });
                   }}
                 >
