@@ -9,12 +9,13 @@ const BannerPage = () => {
   const user = JSON.parse(localStorage.getItem("user"));
   const [bannerList, setBannerList] = useState([]);
   const [refresh, setRefresh] = useState(false);
+
   const [bannerUploadLoading, setBannerUploadLoading] = useState(false);
 
   useEffect(() => {
     fetch(`${process.env.REACT_APP_API_URI}/banner/all`)
-      .then(res => res.json())
-      .then(result => {
+      .then((res) => res.json())
+      .then((result) => {
         const imagePreviewData = { ...imagePreviewObj };
         if (result.status === "success") {
           // setBannerList(result.data.banners);
@@ -22,34 +23,39 @@ const BannerPage = () => {
             imagePreviewData[`imagePreview${index + 1}`] = {
               edit: false,
               url: item.bannerImage.url,
+              file: null,
             };
           });
           setimagePreviewObj(imagePreviewData);
           // console.log(imagePreviewData);
         } else toast.error(result.error.message);
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
         toast.info("Internal server error");
       });
-  }, []);
+  }, [refresh]);
 
   const [imagePreviewObj, setimagePreviewObj] = useState({
     imagePreview1: {
       edit: false,
       url: null,
+      file: null,
     },
     imagePreview2: {
       edit: false,
       url: null,
+      file: null,
     },
     imagePreview3: {
       edit: false,
       url: null,
+      file: null,
     },
     imagePreview4: {
       edit: false,
       url: null,
+      file: null,
     },
   });
 
@@ -57,17 +63,20 @@ const BannerPage = () => {
     imageDesignPreview1: {
       edit: false,
       url: null,
+      file: null,
     },
     imageDesignPreview2: {
       edit: false,
       url: null,
+      file: null,
     },
     imageDesignPreview3: {
       edit: false,
       url: null,
+      file: null,
     },
   });
-  const handleFileChange = e => {
+  const handleFileChange = (e) => {
     const selected = e.target.files[0];
     // console.log(selected);
     let reader = new FileReader();
@@ -78,13 +87,14 @@ const BannerPage = () => {
         imagePreview1: {
           edit: true,
           url: reader.result,
+          file: selected,
         },
       });
       // console.log(reader.result);
     };
     reader.readAsDataURL(selected);
   };
-  const handleFileChange2 = e => {
+  const handleFileChange2 = (e) => {
     const selected = e.target.files[0];
     let reader = new FileReader();
     reader.onloadend = () => {
@@ -94,13 +104,14 @@ const BannerPage = () => {
         imagePreview2: {
           edit: true,
           url: reader.result,
+          file: selected,
         },
       });
       // console.log(reader.result);
     };
     reader.readAsDataURL(selected);
   };
-  const handleFileChange3 = e => {
+  const handleFileChange3 = (e) => {
     const selected = e.target.files[0];
     let reader = new FileReader();
     reader.onloadend = () => {
@@ -110,13 +121,14 @@ const BannerPage = () => {
         imagePreview3: {
           edit: true,
           url: reader.result,
+          file: selected,
         },
       });
       // console.log(reader.result);
     };
     reader.readAsDataURL(selected);
   };
-  const handleFileChange4 = e => {
+  const handleFileChange4 = (e) => {
     const selected = e.target.files[0];
     let reader = new FileReader();
     reader.onloadend = () => {
@@ -126,6 +138,7 @@ const BannerPage = () => {
         imagePreview4: {
           edit: true,
           url: reader.result,
+          file: selected,
         },
       });
       // console.log(reader.result);
@@ -133,7 +146,7 @@ const BannerPage = () => {
     reader.readAsDataURL(selected);
   };
 
-  const handleFileChangeDesign = e => {
+  const handleFileChangeDesign = (e) => {
     const selected = e.target.files[0];
     // console.log(selected);
     let reader = new FileReader();
@@ -150,7 +163,7 @@ const BannerPage = () => {
     };
     reader.readAsDataURL(selected);
   };
-  const handleFileChangeDesign2 = e => {
+  const handleFileChangeDesign2 = (e) => {
     const selected = e.target.files[0];
     let reader = new FileReader();
     reader.onloadend = () => {
@@ -166,7 +179,7 @@ const BannerPage = () => {
     };
     reader.readAsDataURL(selected);
   };
-  const handleFileChangeDesign3 = e => {
+  const handleFileChangeDesign3 = (e) => {
     const selected = e.target.files[0];
     let reader = new FileReader();
     reader.onloadend = () => {
@@ -184,13 +197,14 @@ const BannerPage = () => {
   };
 
   const handleAddBannerSubmit = () => {
-    postImage();
+    // postImage();
+    handlePostBannerImages();
   };
 
   const postImage = async () => {
     setBannerUploadLoading(true);
     const newData = [];
-    const promises = Object.keys(imagePreviewObj).map(async item => {
+    const promises = Object.keys(imagePreviewObj).map(async (item) => {
       if (imagePreviewObj[item].edit) {
         if (imagePreviewObj[item].url) {
           const data = new FormData();
@@ -203,12 +217,12 @@ const BannerPage = () => {
             method: "post",
             body: data,
           })
-            .then(res => res.json())
-            .then(data => {
+            .then((res) => res.json())
+            .then((data) => {
               console.log(data);
               newData.push({ bannerImage: { url: data.url } });
             })
-            .catch(err => console.log(err));
+            .catch((err) => console.log(err));
         }
       } else {
         if (imagePreviewObj[item].url) {
@@ -224,7 +238,117 @@ const BannerPage = () => {
     handlePostBannerImages(newData);
   };
 
-  const handlePostBannerImages = async data => {
+  const handlePostBannerImages = async (data) => {
+    let prevImages = [];
+    console.log(imagePreviewObj, "<<<thisisimageview");
+    const formdata = new FormData();
+    if (
+      imagePreviewObj.imagePreview1.file == null &&
+      imagePreviewObj.imagePreview1.url != null
+    ) {
+      prevImages = [...prevImages, imagePreviewObj.imagePreview1.url];
+    }
+    if (
+      imagePreviewObj.imagePreview2.file == null &&
+      imagePreviewObj.imagePreview2.url != null
+    ) {
+      prevImages = [...prevImages, imagePreviewObj.imagePreview2.url];
+    }
+    if (
+      imagePreviewObj.imagePreview3.file == null &&
+      imagePreviewObj.imagePreview3.url != null
+    ) {
+      prevImages = [...prevImages, imagePreviewObj.imagePreview3.url];
+    }
+    if (
+      imagePreviewObj.imagePreview4.file == null &&
+      imagePreviewObj.imagePreview4.url != null
+    ) {
+      prevImages = [...prevImages, imagePreviewObj.imagePreview4.url];
+    }
+    // return null;
+    //---- ---------------------------------------------------------------------------------------------
+    if (imagePreviewObj.imagePreview1?.file != null) {
+      formdata.append(
+        "image",
+        imagePreviewObj?.imagePreview1?.file,
+        imagePreviewObj?.imagePreview1?.file.name
+      );
+    }
+    if (imagePreviewObj.imagePreview2?.file != null) {
+      formdata.append(
+        "image",
+        imagePreviewObj?.imagePreview2?.file,
+        imagePreviewObj?.imagePreview2?.file.name
+      );
+    }
+    if (imagePreviewObj.imagePreview3?.file != null) {
+      formdata.append(
+        "image",
+        imagePreviewObj?.imagePreview3?.file,
+        imagePreviewObj?.imagePreview3?.file.name
+      );
+    }
+    if (imagePreviewObj.imagePreview4?.file != null) {
+      formdata.append(
+        "image",
+        imagePreviewObj?.imagePreview4?.file,
+        imagePreviewObj?.imagePreview4?.file.name
+      );
+    }
+    formdata.append("prevImages", JSON.stringify(prevImages));
+
+    var requestOptions = {
+      method: "POST",
+      body: formdata,
+      redirect: "follow",
+    };
+
+    fetch(`${process.env.REACT_APP_API_URI}/admin/banner/add`, requestOptions)
+      .then((response) => response.text())
+      .then((resu) => {
+        // console.log(result);
+        let result = JSON.parse(resu);
+
+        if (result.status === "success") {
+          const imagePreviewData = {
+            imagePreview1: {
+              edit: false,
+              url: null,
+              file: null,
+            },
+            imagePreview2: {
+              edit: false,
+              url: null,
+              file: null,
+            },
+            imagePreview3: {
+              edit: false,
+              url: null,
+              file: null,
+            },
+            imagePreview4: {
+              edit: false,
+              url: null,
+              file: null,
+            },
+          };
+          result.data.banners.map((item, index) => {
+            // imagePreviewData[`imagePreview${index + 1}`] = {
+            //   edit: false,
+            //   url: item.bannerImage.url,
+            // };
+          });
+          setimagePreviewObj(imagePreviewData);
+          toast.success(result.data.message);
+          setRefresh(!refresh);
+          window.location.reload(true);
+        } else toast.error(result.error.message);
+        setBannerUploadLoading(false);
+      })
+      .catch((error) => console.log("error", error));
+    return null;
+
     console.log(data);
     fetch(`${process.env.REACT_APP_API_URI}/admin/banner/add`, {
       method: "post",
@@ -234,24 +358,28 @@ const BannerPage = () => {
       },
       body: JSON.stringify({ banners: data }),
     })
-      .then(res => res.json())
-      .then(result => {
+      .then((res) => res.json())
+      .then((result) => {
         const imagePreviewData = {
           imagePreview1: {
             edit: false,
             url: null,
+            file: null,
           },
           imagePreview2: {
             edit: false,
             url: null,
+            file: null,
           },
           imagePreview3: {
             edit: false,
             url: null,
+            file: null,
           },
           imagePreview4: {
             edit: false,
             url: null,
+            file: null,
           },
         };
         if (result.status === "success") {
@@ -266,7 +394,7 @@ const BannerPage = () => {
         } else toast.error(result.error.message);
         setBannerUploadLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
         setBannerUploadLoading(false);
         toast.info("Internal server error.");
@@ -347,7 +475,7 @@ const BannerPage = () => {
                   accept="image/*"
                   id="articleImageInput"
                   className="addArticleInput addArticleImageInput"
-                  onChange={e => handleFileChange(e)}
+                  onChange={(e) => handleFileChange(e)}
                 />
               </div>
             ) : (
@@ -364,7 +492,7 @@ const BannerPage = () => {
                       // setImagePreview(null);
                       setimagePreviewObj({
                         ...imagePreviewObj,
-                        imagePreview1: { edit: true, url: null },
+                        imagePreview1: { edit: true, url: null, file: null },
                       });
                     }}
                   >
@@ -390,7 +518,7 @@ const BannerPage = () => {
                   accept="image/*"
                   id="articleImageInput"
                   className="addArticleInput addArticleImageInput"
-                  onChange={e => handleFileChange2(e)}
+                  onChange={(e) => handleFileChange2(e)}
                 />
               </div>
             ) : (
@@ -436,7 +564,7 @@ const BannerPage = () => {
                   accept="image/*"
                   id="articleImageInput"
                   className="addArticleInput addArticleImageInput"
-                  onChange={e => handleFileChange3(e)}
+                  onChange={(e) => handleFileChange3(e)}
                 />
               </div>
             ) : (
@@ -482,7 +610,7 @@ const BannerPage = () => {
                   accept="image/*"
                   id="articleImageInput"
                   className="addArticleInput addArticleImageInput"
-                  onChange={e => handleFileChange4(e)}
+                  onChange={(e) => handleFileChange4(e)}
                 />
               </div>
             ) : (

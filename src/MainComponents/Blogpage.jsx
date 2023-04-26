@@ -24,6 +24,7 @@ const BlogPage = () => {
   const [blogImagePreview, setBlogImagePreview] = useState({
     edit: false,
     url: null,
+    file: null,
   });
   const [blogList, setBlogList] = useState([]);
   const [defaultBlogList, setDefaultBlogList] = useState([]);
@@ -69,6 +70,9 @@ const BlogPage = () => {
   };
 
   const postBlogImage = async (type, blogId) => {
+    if (type === "add") handleAddBlog();
+    else handleEditBlog(blogId);
+    return null;
     const displayImage = [];
 
     if (blogImagePreview.edit) {
@@ -95,12 +99,39 @@ const BlogPage = () => {
       if (blogImagePreview.url)
         displayImage.push({ url: blogImagePreview.url });
     }
-
-    if (type === "add") handleAddBlog(displayImage);
-    else handleEditBlog(blogId, displayImage);
   };
 
-  const handleAddBlog = async (displayImage) => {
+  const handleAddBlog = async () => {
+    var formdata = new FormData();
+    formdata.append(
+      "image",
+      blogImagePreview?.file,
+      blogImagePreview.file.filename
+    );
+    formdata.append("title", title.current);
+    formdata.append("content", content.current);
+
+    var requestOptions = {
+      method: "POST",
+      body: formdata,
+      redirect: "follow",
+    };
+
+    fetch(`${process.env.REACT_APP_API_URI}/admin/blog/add`, requestOptions)
+      .then((response) => response.text())
+      .then((resu) => {
+        let result = JSON.parse(resu);
+        if (result.status === "success") {
+          const newBlogList = [result.data.blog, ...blogList];
+          setBlogList(newBlogList);
+          toast.success(result.data.message);
+          setEditorState("");
+          OpenCloseAddBlogModal(false);
+        }
+      })
+      .catch((error) => console.log("error", error));
+    return null;
+
     await fetch(`${process.env.REACT_APP_API_URI}/admin/blog/add`, {
       method: "post",
       headers: {
@@ -110,7 +141,7 @@ const BlogPage = () => {
       body: JSON.stringify({
         title: title.current,
         content: content.current,
-        displayImage,
+        // displayImage,
       }),
     })
       .then((res) => res.json())
@@ -127,7 +158,45 @@ const BlogPage = () => {
     setAddBlogLoading(false);
   };
 
-  const handleEditBlog = async (_id, displayImage) => {
+  const handleEditBlog = async (_id) => {
+    var formdata = new FormData();
+    if (blogImagePreview?.file != null) {
+      formdata.append(
+        "image",
+        blogImagePreview?.file,
+        blogImagePreview.file.filename
+      );
+    }
+    formdata.append("title", title.current);
+    formdata.append("content", content.current);
+    formdata.append("displayImage", [{ url: blogImagePreview?.url }]);
+
+    var requestOptions = {
+      method: "POST",
+      body: formdata,
+      redirect: "follow",
+    };
+
+    // fetch(`http://localhost:8080/blog/${_id}/edit`, requestOptions)
+    fetch(`${process.env.REACT_APP_API_URI}/blog/${_id}/edit`, requestOptions)
+      .then((response) => response.text())
+      .then((resu) => {
+        let result = JSON.parse(resu);
+        if (result.status === "success") {
+          const newBlogList = blogList.map((item) => {
+            if (item._id == _id) return result.data.updatedBlog;
+            else return item;
+          });
+          setBlogList(newBlogList);
+          toast.success(result.data.message);
+          setEditBlogData({});
+          OpenCloseAddBlogModal(false);
+        }
+      })
+      .catch((error) => console.log("error", error));
+
+    return null;
+
     await fetch(`${process.env.REACT_APP_API_URI}/blog/${_id}/edit`, {
       method: "post",
       headers: {
@@ -137,7 +206,7 @@ const BlogPage = () => {
       body: JSON.stringify({
         title: title.current,
         content: content.current,
-        displayImage,
+        // displayImage,
       }),
     })
       .then((res) => res.json())
@@ -197,7 +266,7 @@ const BlogPage = () => {
     const selected = e.target.files[0];
     let reader = new FileReader();
     reader.onloadend = () => {
-      setBlogImagePreview({ edit: true, url: reader.result });
+      setBlogImagePreview({ edit: true, url: reader.result, file: selected });
     };
     reader.readAsDataURL(selected);
   };

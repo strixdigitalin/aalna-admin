@@ -13,8 +13,8 @@ const TrendingPage = () => {
 
   useEffect(() => {
     fetch(`${process.env.REACT_APP_API_URI}/trending_product/all`)
-      .then(res => res.json())
-      .then(result => {
+      .then((res) => res.json())
+      .then((result) => {
         const imagePreviewData = { ...imagePreviewDesignObj };
         if (result.status === "success") {
           // setBannerList(result.data.banners);
@@ -29,7 +29,7 @@ const TrendingPage = () => {
           // console.log(imagePreviewData);
         } else toast.error(result.error.message);
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
         toast.info("Internal server error");
       });
@@ -58,14 +58,17 @@ const TrendingPage = () => {
     imageDesignPreview1: {
       edit: false,
       url: null,
+      file: null,
     },
     imageDesignPreview2: {
       edit: false,
       url: null,
+      file: null,
     },
     imageDesignPreview3: {
       edit: false,
       url: null,
+      file: null,
     },
   });
   // const handleFileChange = (e) => {
@@ -134,7 +137,7 @@ const TrendingPage = () => {
   //   reader.readAsDataURL(selected);
   // };
 
-  const handleFileChangeDesign = e => {
+  const handleFileChangeDesign = (e) => {
     const selected = e.target.files[0];
     // console.log(selected);
     let reader = new FileReader();
@@ -145,13 +148,14 @@ const TrendingPage = () => {
         imageDesignPreview1: {
           edit: true,
           url: reader.result,
+          file: selected,
         },
       });
       // console.log(reader.result);
     };
     reader.readAsDataURL(selected);
   };
-  const handleFileChangeDesign2 = e => {
+  const handleFileChangeDesign2 = (e) => {
     const selected = e.target.files[0];
     let reader = new FileReader();
     reader.onloadend = () => {
@@ -161,13 +165,14 @@ const TrendingPage = () => {
         imageDesignPreview2: {
           edit: true,
           url: reader.result,
+          file: selected,
         },
       });
       // console.log(reader.result);
     };
     reader.readAsDataURL(selected);
   };
-  const handleFileChangeDesign3 = e => {
+  const handleFileChangeDesign3 = (e) => {
     const selected = e.target.files[0];
     let reader = new FileReader();
     reader.onloadend = () => {
@@ -177,6 +182,7 @@ const TrendingPage = () => {
         imageDesignPreview3: {
           edit: true,
           url: reader.result,
+          file: selected,
         },
       });
       // console.log(reader.result);
@@ -190,8 +196,12 @@ const TrendingPage = () => {
 
   const postImage = async () => {
     setBannerUploadLoading(true);
+
+    handlePostTrendProductImages();
+    return null;
     const newData = [];
-    const promises = Object.keys(imagePreviewDesignObj).map(async item => {
+
+    const promises = Object.keys(imagePreviewDesignObj).map(async (item) => {
       if (imagePreviewDesignObj[item].edit) {
         if (imagePreviewDesignObj[item].url) {
           const data = new FormData();
@@ -204,12 +214,12 @@ const TrendingPage = () => {
             method: "post",
             body: data,
           })
-            .then(res => res.json())
-            .then(data => {
+            .then((res) => res.json())
+            .then((data) => {
               console.log(data);
               newData.push({ productImage: { url: data.url } });
             })
-            .catch(err => console.log(err));
+            .catch((err) => console.log(err));
         }
       } else {
         if (imagePreviewDesignObj[item].url) {
@@ -223,37 +233,96 @@ const TrendingPage = () => {
     console.log({ newData });
     // setdisplayImages(newData2);
     await Promise.all(promises);
-
-    handlePostTrendProductImages(newData);
   };
 
-  const handlePostTrendProductImages = async data => {
+  const handlePostTrendProductImages = async (data) => {
     console.log(data);
-    fetch(`${process.env.REACT_APP_API_URI}/admin/trending_product/add`, {
-      method: "post",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + user.token,
-      },
-      body: JSON.stringify({ productImages: data }),
-    })
-      .then(res => res.json())
-      .then(result => {
-        const imagePreviewDesignData = {
-          imageDesignPreview1: {
-            edit: false,
-            url: null,
-          },
-          imageDesignPreview2: {
-            edit: false,
-            url: null,
-          },
-          imageDesignPreview3: {
-            edit: false,
-            url: null,
-          },
-        };
+    const formdata = new FormData();
+    let prevImages = [];
+    if (
+      imagePreviewDesignObj.imageDesignPreview1.file == null &&
+      imagePreviewDesignObj.imageDesignPreview1.url != null
+    ) {
+      prevImages = [
+        ...prevImages,
+        imagePreviewDesignObj.imageDesignPreview1.url,
+      ];
+    }
+    if (
+      imagePreviewDesignObj.imageDesignPreview2.file == null &&
+      imagePreviewDesignObj.imageDesignPreview2.url != null
+    ) {
+      prevImages = [
+        ...prevImages,
+        imagePreviewDesignObj.imageDesignPreview2.url,
+      ];
+    }
+    if (
+      imagePreviewDesignObj.imageDesignPreview3.file == null &&
+      imagePreviewDesignObj.imageDesignPreview3.url != null
+    ) {
+      prevImages = [
+        ...prevImages,
+        imagePreviewDesignObj.imageDesignPreview3.url,
+      ];
+    }
+
+    console.log(imagePreviewDesignObj, "<<<thisisprevimages");
+    // return null;
+    //---- ---------------------------------------------------------------------------------------------
+    if (imagePreviewDesignObj.imageDesignPreview1?.file != null) {
+      formdata.append(
+        "image",
+        imagePreviewDesignObj?.imageDesignPreview1?.file,
+        imagePreviewDesignObj?.imageDesignPreview1?.file.name
+      );
+    }
+    if (imagePreviewDesignObj.imageDesignPreview2?.file != null) {
+      formdata.append(
+        "image",
+        imagePreviewDesignObj?.imageDesignPreview2?.file,
+        imagePreviewDesignObj?.imageDesignPreview2?.file.name
+      );
+    }
+    if (imagePreviewDesignObj.imageDesignPreview3?.file != null) {
+      formdata.append(
+        "image",
+        imagePreviewDesignObj?.imageDesignPreview3?.file,
+        imagePreviewDesignObj?.imageDesignPreview3?.file.name
+      );
+    }
+
+    formdata.append("prevImages", JSON.stringify(prevImages));
+
+    var requestOptions = {
+      method: "POST",
+      body: formdata,
+      redirect: "follow",
+    };
+
+    fetch(
+      `${process.env.REACT_APP_API_URI}/admin/trending_product/add`,
+      requestOptions
+    )
+      .then((response) => response.text())
+      .then((resu) => {
+        console.log(resu);
+        let result = JSON.parse(resu);
         if (result.status === "success") {
+          const imagePreviewDesignData = {
+            imageDesignPreview1: {
+              edit: false,
+              url: null,
+            },
+            imageDesignPreview2: {
+              edit: false,
+              url: null,
+            },
+            imageDesignPreview3: {
+              edit: false,
+              url: null,
+            },
+          };
           result.data.site_trending_product.map((item, index) => {
             imagePreviewDesignData[`imageDesignPreview${index + 1}`] = {
               edit: false,
@@ -265,11 +334,54 @@ const TrendingPage = () => {
         } else toast.error(result.error.message);
         setBannerUploadLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
         setBannerUploadLoading(false);
         toast.info("Internal server error.");
       });
+    return null;
+
+    // fetch(`${process.env.REACT_APP_API_URI}/admin/trending_product/add`, {
+    //   method: "post",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //     Authorization: "Bearer " + user.token,
+    //   },
+    //   body: JSON.stringify({ productImages: data }),
+    // })
+    //   .then((res) => res.json())
+    //   .then((result) => {
+    //     const imagePreviewDesignData = {
+    //       imageDesignPreview1: {
+    //         edit: false,
+    //         url: null,
+    //       },
+    //       imageDesignPreview2: {
+    //         edit: false,
+    //         url: null,
+    //       },
+    //       imageDesignPreview3: {
+    //         edit: false,
+    //         url: null,
+    //       },
+    //     };
+    //   if (result.status === "success") {
+    //     result.data.site_trending_product.map((item, index) => {
+    //       imagePreviewDesignData[`imageDesignPreview${index + 1}`] = {
+    //         edit: false,
+    //         url: item.productImage.url,
+    //       };
+    //     });
+    //     setimagePreviewDesignObj(imagePreviewDesignData);
+    //     toast.success(result.data.message);
+    //   } else toast.error(result.error.message);
+    //   setBannerUploadLoading(false);
+    // })
+    //   .catch((err) => {
+    //     console.log(err);
+    //     setBannerUploadLoading(false);
+    //     toast.info("Internal server error.");
+    //   });
   };
 
   return (
@@ -346,7 +458,7 @@ const TrendingPage = () => {
                   accept="image/*"
                   id="articleImageInput"
                   className="addArticleInput addArticleImageInput"
-                  onChange={e => handleFileChangeDesign(e)}
+                  onChange={(e) => handleFileChangeDesign(e)}
                 />
               </div>
             ) : (
@@ -389,7 +501,7 @@ const TrendingPage = () => {
                   accept="image/*"
                   id="articleImageInput"
                   className="addArticleInput addArticleImageInput"
-                  onChange={e => handleFileChangeDesign2(e)}
+                  onChange={(e) => handleFileChangeDesign2(e)}
                 />
               </div>
             ) : (
@@ -435,7 +547,7 @@ const TrendingPage = () => {
                   accept="image/*"
                   id="articleImageInput"
                   className="addArticleInput addArticleImageInput"
-                  onChange={e => handleFileChangeDesign3(e)}
+                  onChange={(e) => handleFileChangeDesign3(e)}
                 />
               </div>
             ) : (

@@ -357,8 +357,8 @@ const AdminPortalHome = () => {
       redirect: "follow",
     };
     console.log("uploading data");
+    // fetch("http://localhost:8080" + "/admin/product/add", requestOptions)
     fetch(process.env.REACT_APP_API_URI + "/admin/product/add", requestOptions)
-      // fetch("http://localhost:8080" + "/admin/product/add", requestOptions)
       .then((response) => response.text())
       .then((result1) => {
         const result = JSON.parse(result1);
