@@ -78,6 +78,7 @@ const AdminPortalHome = () => {
   const [addProductLoading, setAddProductLoading] = useState(false);
   const [addCetgoryLoading, setAddCetgoryLoading] = useState(false);
   const [allImages, setallImages] = useState([]);
+  const [categoryImageFile, setCategoryImageFile] = useState(null);
   const [editorState, setEditorState] = useState(EditorState.createEmpty());
   const [editBlogData, setEditBlogData] = useState({});
   const [addColorLoading, setAddColorLoading] = useState(false);
@@ -222,6 +223,7 @@ const AdminPortalHome = () => {
 
   const handleCategoryImageChange = (e) => {
     const selected = e.target.files[0];
+    setCategoryImageFile(e.target.files[0]);
     let reader = new FileReader();
     reader.onloadend = () => {
       setCategoryImagePreview({ url: reader.result });
@@ -589,34 +591,74 @@ const AdminPortalHome = () => {
     setAddColorLoading(false);
   };
 
-  const handleAddProductCategory = async (displayImage) => {
+  const handleAddProductCategory = async (file) => {
+    const displayImage = file;
+    var myHeaders = new Headers();
+    myHeaders.append("Authorization", "Bearer " + user.token);
+    const data = new FormData();
+    data.append("name", categoryName.current);
+    data.append("description", categoryDescription.current);
+    if (file != null) {
+      data.append("file", file, file.name);
+    }
+    // return console.log(file, "<<<thisisfile");
+
     setAddCetgoryLoading(true);
-    await fetch(`${process.env.REACT_APP_API_URI}/product/category/add`, {
-      method: "post",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + user.token,
-      },
-      body: JSON.stringify({
-        name: categoryName.current,
-        description: categoryDescription.current,
-        displayImage,
-      }),
-    })
-      .then((res) => res.json())
-      .then((result) => {
+
+    var requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: data,
+      redirect: "follow",
+    };
+    // `${process.env.REACT_APP_API_URI}/product/category/add`,
+    fetch(
+      `${process.env.REACT_APP_API_URI}/product/category/add`,
+      requestOptions
+    )
+      .then((response) => response.text())
+      .then((result1) => {
+        const result = JSON.parse(result1);
+        console.log(result, "<<<thisisisproductcategory");
+
         if (result.status === "success") {
-          const newCategList = [...categoryList, result.data.product_category];
-          setCategoryList(newCategList);
-          toast.success(result.data.message);
-          CloseAddCategory();
-        } else toast.error(result.error.message);
+          console.log(result);
+          navigation("/Products");
+        } else {
+          toast.error(result.error.message);
+          console.log(result.error);
+        }
       })
-      .catch((err) => console.log(err));
+      .catch((error) => console.log("error", error));
+    // await fetch(`${process.env.REACT_APP_API_URI}/product/category/add`, {
+    //   method: "post",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //     Authorization: "Bearer " + user.token,
+    //   },
+    //   body: JSON.stringify({
+    //     name: categoryName.current,
+    //     description: categoryDescription.current,
+    //     displayImage,
+    //   }),
+    // })
+    //   .then((res) => res.json())
+    //   .then((result) => {
+    //     if (result.status === "success") {
+    //       const newCategList = [...categoryList, result.data.product_category];
+    //       setCategoryList(newCategList);
+    //       toast.success(result.data.message);
+    //       CloseAddCategory();
+    //     } else toast.error(result.error.message);
+    //   })
+    //   .catch((err) => console.log(err));
     setAddCetgoryLoading(false);
   };
 
   const postProductCategoryImage = async () => {
+    handleAddProductCategory(categoryImageFile);
+    // console.log(categoryImageFile, "<<<these are image file");
+    return null;
     const data = new FormData();
     data.append(
       "file",
@@ -1176,6 +1218,7 @@ const AdminPortalHome = () => {
                 <div
                   className="imagePreviewRemove"
                   onClick={() => {
+                    setCategoryImageFile(null);
                     setCategoryImagePreview({
                       url: null,
                       file: null,
