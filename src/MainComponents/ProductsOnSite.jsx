@@ -209,7 +209,7 @@ const ProductsOnSite = () => {
                   dangerouslySetInnerHTML={createMarkup(item.description)}
                 ></div>
                 <div className="itemPrice">
-                  Category : {item.product_category.name}
+                  Category : {item.product_category?.name}
                 </div>
                 <div
                   className="itemPrice bold"
@@ -257,7 +257,7 @@ const ProductsOnSite = () => {
                           displayImage: item.displayImage,
                           brand_title: item.brand_title,
                           price: item.price,
-                          product_category: item.product_category,
+                          product_category: item?.product_category,
                           availability: item.availability,
                           color: item.color,
                         },
