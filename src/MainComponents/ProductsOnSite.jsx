@@ -15,6 +15,8 @@ const ProductsOnSite = () => {
   const navigation = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
   const quantityRef = useRef(0);
+  const [page, setPage] = useState(1)
+  const [count, setCount] = useState(1);
 
   const createMarkup = (html) => {
     return {
@@ -23,7 +25,7 @@ const ProductsOnSite = () => {
   };
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URI}/product/all`, {
+    fetch(`${process.env.REACT_APP_API_URI}/product/all?page=${page}`, {
       headers: {
         Authorization: "Bearer " + user.token,
       },
@@ -33,12 +35,13 @@ const ProductsOnSite = () => {
         if (result.status === "success") {
           setProducts(result.data.products);
           setDefaultProducts(result.data.products);
+          setCount(result?.data?.count);
         } else {
           toast.info(result.error.message);
         }
       })
       .catch((err) => console.log(err));
-  }, []);
+  }, [page]);
 
   const filterIt = (text) => {
     if (text == "" || text.trim() == "" || text.trim() == null) {
@@ -185,6 +188,22 @@ const ProductsOnSite = () => {
               placeholder="Search product by Id"
               onChange={(e) => filterIt(e.target.value)}
             />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+            <div
+              className="cancelButton"
+              style={{ cursor: page > 1 ? "pointer" : "default" }}
+              onClick={() => page > 1 && setPage(page - 1)}
+            >
+              Prev
+            </div>
+            <div
+              className="cancelButton"
+              style={{ cursor: count > page * 18 ? "pointer" : "default" }}
+              onClick={() => count > page * 18 && setPage(page + 1)}
+            >
+              Next
+            </div>
           </div>
           {products.map((item) => (
             <div className="eachOrderContainer" key={item._id}>
