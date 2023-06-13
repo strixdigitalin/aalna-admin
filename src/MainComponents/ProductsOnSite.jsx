@@ -41,7 +41,7 @@ const ProductsOnSite = () => {
         }
       })
       .catch((err) => console.log(err));
-  }, [page]);
+  }, [ page ]);
 
   const filterIt = (text) => {
     if (text == "" || text.trim() == "" || text.trim() == null) {
