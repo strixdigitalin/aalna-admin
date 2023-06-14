@@ -11,6 +11,7 @@ const ProductsOnSite = () => {
   const [avilability, setAvilability] = useState(true);
   const { dispatch } = useContext(UserContext);
   const [products, setProducts] = useState([]);
+  const [value, setValue] = useState(1);
   const [defaultProducts, setDefaultProducts] = useState([]);
   const navigation = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
@@ -22,8 +23,14 @@ const ProductsOnSite = () => {
     };
   };
 
+  const handleChange = (event) => {
+
+    setValue(event.target.value);
+ 
+  };
+
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URI}/product/all`, {
+    fetch(`${process.env.REACT_APP_API_URI}/product/all?page=${2}`, {
       headers: {
         Authorization: "Bearer " + user.token,
       },
@@ -179,6 +186,13 @@ const ProductsOnSite = () => {
         </div>
         <div className="adminPagemainContainer">
           <div className="addarticleHeading">Products On Site</div>
+          <select value={value} onChange={handleChange}>
+            <option value="1">Page 1</option>
+            <option value="2">Page 2</option>
+            <option value="3">Page 3</option>
+            <option value="4" >Page 4</option>
+            <option value="5" >Page 5</option>
+          </select>
           <div className="searchbar">
             <input
               type="text"
